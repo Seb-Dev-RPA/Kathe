@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -219,11 +218,12 @@
       z-index: 2;
       top: 8px;
       left: 50%;
-      transform: translateX(-50%) scale(var(--yes-scale, 1));
+      /* Tamaño fijo: ya no cambia de escala. */
+      transform: translateX(-50%);
       color: white;
       background: linear-gradient(135deg, #fa7898, #e64876);
       box-shadow: 0 9px 22px #e6487638;
-      transition: transform .25s ease, box-shadow .25s ease;
+      transition: box-shadow .25s ease;
       animation: yesGlow 1.7s ease-in-out infinite;
     }
 
@@ -680,10 +680,7 @@
       const message = messages[(attempts - 1) % messages.length];
       hint.textContent = message;
 
-      yesBtn.style.setProperty(
-        "--yes-scale",
-        Math.min(1 + attempts * .085, 2.2)
-      );
+      // El botón "Sí" ya no cambia de tamaño.
 
       noBtn.style.setProperty(
         "--no-scale",
