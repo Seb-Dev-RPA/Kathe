@@ -9,9 +9,10 @@
 
   <style>
     :root {
-      --pink: #ff4f87;
-      --dark-pink: #c52d65;
       --text: #54243b;
+      --dark-pink: #c52d65;
+      --yes-scale: 1;
+      --no-scale: 1;
     }
 
     * { box-sizing: border-box; }
@@ -40,8 +41,9 @@
 
     .card {
       position: relative;
+      isolation: isolate;
       width: min(100%, 440px);
-      padding: 34px 22px;
+      padding: 32px 22px;
       text-align: center;
       border: 1px solid white;
       border-radius: 28px;
@@ -69,64 +71,71 @@
     }
 
     .question {
-      margin: 25px 0;
+      margin: 24px 0 14px;
       font-size: clamp(20px, 5.5vw, 25px);
       font-weight: bold;
       line-height: 1.5;
     }
 
-    /* Zona reservada: ambos botones permanecen visibles. */
+    /* Botones apilados y centrados */
     .buttons {
       position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       width: 100%;
-      height: 150px;
-      margin: 20px auto 8px;
+      height: 164px;
+      margin: 8px auto;
       overflow: hidden;
       border-radius: 20px;
-      background: rgba(255,240,245,.45);
-      border: 1px dashed rgba(255,153,187,.35);
     }
 
     .btn {
       position: absolute;
-      min-width: 108px;
-      min-height: 50px;
-      padding: 12px 17px;
-      border-radius: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 88px;
+      min-height: 40px;
+      padding: 9px 16px;
+      border-radius: 40px;
       border: none;
-      font-size: 17px;
+      font-size: 15px;
       font-weight: bold;
-      cursor: pointer;
       white-space: nowrap;
-      transition:
-        left .3s ease,
-        top .3s ease,
-        transform .25s ease,
-        box-shadow .25s ease;
-    }
-
-    #noBtn {
-      left: 7%;
-      top: 50px;
-      color: #a45c79;
-      background: #ffe0eb;
-      border: 1px solid #ffc3d8;
-      z-index: 2;
+      cursor: pointer;
+      transform-origin: center;
     }
 
     #yesBtn {
-      right: 7%;
-      top: 50px;
+      top: 8px;
+      left: 50%;
+      z-index: 2;
       color: white;
-      background: linear-gradient(135deg,#ff6397,#ed3679);
-      box-shadow: 0 8px 22px rgba(237,54,121,.28);
-      transform: scale(var(--yes-scale, 1));
+      background: linear-gradient(135deg, #ff6397, #ed3679);
+      box-shadow: 0 6px 18px rgba(237,54,121,.28);
+      transform: translateX(-50%) scale(var(--yes-scale));
       animation: heartbeat 2.4s ease-in-out infinite;
-      z-index: 1;
+      transition: box-shadow .25s ease;
+    }
+
+    #noBtn {
+      top: 100px;
+      left: 50%;
+      z-index: 3;
+      color: #a45c79;
+      background: #ffe0eb;
+      border: 1px solid #ffc3d8;
+      transform: translateX(-50%) scale(var(--no-scale));
+      transition:
+        left .07s linear,
+        top .07s linear,
+        transform .07s linear;
     }
 
     .hint {
-      min-height: 40px;
+      min-height: 36px;
+      margin-top: 14px;
       color: #b07a91;
       font-size: 13px;
       line-height: 1.6;
@@ -163,26 +172,7 @@
       animation: successEnter 1.2s ease both;
     }
 
-    /* Control de música */
-    .music-button {
-      margin-top: 8px;
-      padding: 10px 15px;
-      border: 1px solid #ffc3d8;
-      border-radius: 24px;
-      background: white;
-      color: #a82b60;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    .music-note {
-      display: block;
-      margin-top: 6px;
-      color: #b07a91;
-      font-size: 11px;
-    }
-
-    /* Efectos globales */
+    /* Capa de animaciones independiente de la tarjeta */
     #effects {
       position: fixed;
       inset: 0;
@@ -215,13 +205,17 @@
     }
 
     @keyframes bob {
-      0%,100% { transform: translateY(0) rotate(-3deg); }
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
       50% { transform: translateY(-8px) rotate(3deg); }
     }
 
     @keyframes heartbeat {
-      0%,100% { transform: scale(var(--yes-scale, 1)); }
-      50% { transform: scale(calc(var(--yes-scale, 1) * 1.05)); }
+      0%, 100% {
+        transform: translateX(-50%) scale(var(--yes-scale));
+      }
+      50% {
+        transform: translateX(-50%) scale(calc(var(--yes-scale) * 1.045));
+      }
     }
 
     @keyframes floatUp {
@@ -238,10 +232,8 @@
     }
 
     @media (max-width: 360px) {
-      .card { padding: 28px 14px; }
-      .btn { min-width: 98px; padding: 11px 12px; font-size: 15px; }
-      #noBtn { left: 3%; }
-      #yesBtn { right: 3%; }
+      .card { padding: 26px 14px; }
+      .buttons { height: 164px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -257,7 +249,9 @@
   <main class="card">
     <section id="questionScreen">
       <div class="sticker">💌</div>
+
       <h1>Kathe, tengo una pregunta...</h1>
+
       <p class="subtitle">
         Prometo que es una pregunta importante 👀
       </p>
@@ -267,30 +261,28 @@
       </p>
 
       <div class="buttons" id="buttonArea">
-        <button class="btn" id="noBtn" type="button">
-          No 🙈
-        </button>
         <button class="btn" id="yesBtn" type="button">
           ¡Sí! 💖
+        </button>
+
+        <button class="btn" id="noBtn" type="button">
+          No 🙈
         </button>
       </div>
 
       <p class="hint" id="hint">
         Elige sabiamente... 🤭
       </p>
-
-      <button class="music-button" id="musicBtn" type="button">
-        🎵 Activar música
-      </button>
-      <span class="music-note">
-        Una pequeña banda sonora para la ocasión 💗
-      </span>
     </section>
 
     <section id="successScreen" class="hidden">
       <div class="sticker">🥹💗</div>
+
       <h1>¡LO SABÍA! ❤️</h1>
-      <p class="subtitle">Jejeje... tenía que intentarlo 😌</p>
+
+      <p class="subtitle">
+        Jejeje... tenía que intentarlo 😌
+      </p>
 
       <div class="message">
         Me alegra mucho que quieras tener
@@ -314,15 +306,11 @@
       </p>
 
       <div class="sticker">💐✨</div>
-      <p class="signature">Con cariño ❤️</p>
 
-      <button class="music-button" id="musicBtnSuccess" type="button">
-        🎵 Activar música
-      </button>
+      <p class="signature">Con cariño ❤️</p>
     </section>
   </main>
 
-  <!-- El nombre incluye espacios: se codifican como %20 -->
   <audio id="bgMusic" loop preload="auto">
     <source src="./Blue%20jung%20kai.mp3" type="audio/mpeg">
   </audio>
@@ -336,58 +324,54 @@
     const successScreen = document.getElementById("successScreen");
     const effects = document.getElementById("effects");
     const music = document.getElementById("bgMusic");
-    const musicBtn = document.getElementById("musicBtn");
-    const musicBtnSuccess = document.getElementById("musicBtnSuccess");
 
     let attempts = 0;
     let accepted = false;
-    let musicOn = false;
     let ambientTimer;
 
     const hints = [
       "¿Segura? Piénsalo otra vez 🙈",
-      "Ese botón tiene otros planes JAJAJA 😂",
-      "No te lo voy a poner tan fácil 🤭",
-      "Mira qué bonito está el botón del Sí... 💗",
-      "El universo intenta decirte algo ✨"
+      "JAJAJA, casi... 😂",
+      "Ese botón tiene otros planes 🤭",
+      "¿Y si mejor pulsas el rosado? 💗",
+      "El universo intenta decirte algo ✨",
+      "Admito que tienes paciencia JAJAJA 😂"
     ];
 
-    // El No solo se mueve dentro de su zona reservada.
-    // Se comprueba que el rectángulo completo quepa en ella.
+    // Posición aleatoria dentro del área visible de botones.
     function moveNoButton() {
       if (accepted) return;
 
       attempts++;
 
       const area = buttonArea.getBoundingClientRect();
-      const yes = yesBtn.getBoundingClientRect();
       const no = noBtn.getBoundingClientRect();
+      const yes = yesBtn.getBoundingClientRect();
 
       const padding = 5;
-      const maxX = Math.max(padding, area.width - no.width - padding);
-      const maxY = Math.max(padding, area.height - no.height - padding);
+      const width = no.width;
+      const height = no.height;
+
+      const maxX = Math.max(padding, area.width - width - padding);
+      const maxY = Math.max(padding, area.height - height - padding);
 
       let x = padding;
       let y = padding;
       let found = false;
 
-      // Buscar una posición que no se solape con el Sí.
-      for (let i = 0; i < 50; i++) {
+      // Buscar rápidamente una posición que no tape el Sí.
+      for (let i = 0; i < 35; i++) {
         const candidateX = padding + Math.random() * (maxX - padding);
         const candidateY = padding + Math.random() * (maxY - padding);
 
-        const candidate = {
-          left: area.left + candidateX,
-          top: area.top + candidateY,
-          right: area.left + candidateX + no.width,
-          bottom: area.top + candidateY + no.height
-        };
+        const left = area.left + candidateX;
+        const top = area.top + candidateY;
 
         const overlapsYes = !(
-          candidate.right < yes.left - 8 ||
-          candidate.left > yes.right + 8 ||
-          candidate.bottom < yes.top - 8 ||
-          candidate.top > yes.bottom + 8
+          left + width < yes.left - 5 ||
+          left > yes.right + 5 ||
+          top + height < yes.top - 5 ||
+          top > yes.bottom + 5
         );
 
         if (!overlapsYes) {
@@ -398,27 +382,36 @@
         }
       }
 
-      // Si no hay suficiente espacio, se mueve al otro lado
-      // de la zona sin salir de ella.
       if (!found) {
-        x = Math.max(padding, Math.min(maxX, area.width * .05));
-        y = Math.max(padding, Math.min(maxY, area.height - no.height - padding));
+        // Alternar entre posiciones seguras dentro de la zona.
+        x = Math.random() < .5 ? padding : maxX;
+        y = Math.random() < .5 ? padding : maxY;
       }
 
+      // Coordenadas relativas al contenedor.
       noBtn.style.left = `${x}px`;
       noBtn.style.top = `${y}px`;
+      noBtn.style.transform = `scale(var(--no-scale))`;
 
-      const scale = Math.min(1 + attempts * .12, 1.7);
-      yesBtn.style.setProperty("--yes-scale", scale);
+      // El Sí crece y el No se encoge.
+      const yesScale = Math.min(1 + attempts * .13, 2.15);
+      const noScale = Math.max(1 - attempts * .09, .35);
 
-      hint.textContent = hints[Math.min(attempts - 1, hints.length - 1)];
+      yesBtn.style.setProperty("--yes-scale", yesScale);
+      noBtn.style.setProperty("--no-scale", noScale);
+
+      hint.textContent =
+        hints[Math.min(attempts - 1, hints.length - 1)];
     }
 
-    // Ratón y pantalla táctil.
+    // Escritorio: escapar en cuanto el cursor se acerca.
     noBtn.addEventListener("pointerenter", (event) => {
-      if (event.pointerType === "mouse") moveNoButton();
+      if (event.pointerType === "mouse") {
+        moveNoButton();
+      }
     });
 
+    // Móvil: escapar antes de que el toque se convierta en clic.
     noBtn.addEventListener("pointerdown", (event) => {
       if (event.pointerType !== "mouse") {
         event.preventDefault();
@@ -426,78 +419,97 @@
       }
     });
 
+    // Respaldo para clics y navegadores táctiles.
     noBtn.addEventListener("click", (event) => {
       event.preventDefault();
       moveNoButton();
     });
 
-    // Mantener los botones dentro de la zona si cambia el tamaño.
+    // Reajustar si cambia la orientación del teléfono.
     window.addEventListener("resize", () => {
-      if (!accepted) {
-        const area = buttonArea.getBoundingClientRect();
-        const no = noBtn.getBoundingClientRect();
+      if (accepted) return;
 
-        const x = Math.max(5, Math.min(
-          parseFloat(noBtn.style.left) || 5,
-          area.width - no.width - 5
-        ));
+      const area = buttonArea.getBoundingClientRect();
+      const no = noBtn.getBoundingClientRect();
 
-        const y = Math.max(5, Math.min(
-          parseFloat(noBtn.style.top) || 5,
-          area.height - no.height - 5
-        ));
+      const x = Math.max(
+        5,
+        Math.min(parseFloat(noBtn.style.left) || area.width / 2, area.width - no.width - 5)
+      );
 
-        noBtn.style.left = `${x}px`;
-        noBtn.style.top = `${y}px`;
-      }
+      const y = Math.max(
+        5,
+        Math.min(parseFloat(noBtn.style.top) || 100, area.height - no.height - 5)
+      );
+
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top = `${y}px`;
     });
 
-    // Mostrar la sorpresa.
-    yesBtn.addEventListener("click", () => {
+    // Aceptar: mostrar la sorpresa e iniciar la música.
+    yesBtn.addEventListener("click", async () => {
+      if (accepted) return;
       accepted = true;
+
       questionScreen.classList.add("hidden");
       successScreen.classList.remove("hidden");
       successScreen.classList.remove("success-enter");
+
       void successScreen.offsetWidth;
       successScreen.classList.add("success-enter");
 
       window.scrollTo({ top: 0, behavior: "smooth" });
 
-      launchHearts(55);
-      launchSparkles(24);
+      launchHearts(60);
+      launchSparkles(28);
       clearInterval(ambientTimer);
+
+      // El toque en Sí permite intentar reproducir el audio.
+      try {
+        await music.play();
+      } catch (error) {
+        console.warn("El navegador no pudo iniciar el audio:", error);
+      }
     });
 
-    // Efectos con elementos dentro de una capa fija,
-    // para que también se vean sobre la pantalla móvil.
+    // Corazones flotantes.
     function launchHearts(amount) {
-      const symbols = ["💗", "💕", "💖", "❤️", "💘"];
+      const symbols = ["💗", "💕", "💖", "❤️", "💘", "✨"];
 
       for (let i = 0; i < amount; i++) {
         setTimeout(() => {
           const el = document.createElement("span");
+
           el.className = "heart";
-          el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+          el.textContent =
+            symbols[Math.floor(Math.random() * symbols.length)];
+
           el.style.left = Math.random() * 96 + "vw";
           el.style.fontSize = (18 + Math.random() * 22) + "px";
           el.style.animationDuration = (5 + Math.random() * 3) + "s";
+
           effects.appendChild(el);
           el.addEventListener("animationend", () => el.remove());
         }, i * 100);
       }
     }
 
+    // Destellos.
     function launchSparkles(amount) {
       const symbols = ["✦", "✧", "♡", "✨"];
 
       for (let i = 0; i < amount; i++) {
         setTimeout(() => {
           const el = document.createElement("span");
+
           el.className = "sparkle";
-          el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+          el.textContent =
+            symbols[Math.floor(Math.random() * symbols.length)];
+
           el.style.left = Math.random() * 94 + "vw";
           el.style.top = Math.random() * 88 + "vh";
           el.style.fontSize = (15 + Math.random() * 20) + "px";
+
           effects.appendChild(el);
           el.addEventListener("animationend", () => el.remove());
         }, i * 180);
@@ -508,55 +520,22 @@
       if (accepted || document.hidden) return;
 
       const el = document.createElement("span");
+
       el.className = "sparkle";
       el.textContent = Math.random() > .5 ? "✦" : "♡";
       el.style.left = Math.random() * 94 + "vw";
       el.style.top = Math.random() * 88 + "vh";
       el.style.fontSize = (13 + Math.random() * 13) + "px";
+
       effects.appendChild(el);
       el.addEventListener("animationend", () => el.remove());
     }
 
     ambientTimer = setInterval(ambientSparkle, 1800);
+
     setTimeout(() => {
       if (!accepted) launchHearts(5);
     }, 900);
-
-    // Música: necesita un toque del usuario en el navegador.
-    async function toggleMusic() {
-      try {
-        if (music.paused) {
-          await music.play();
-          musicOn = true;
-        } else {
-          music.pause();
-          musicOn = false;
-        }
-
-        updateMusicButtons();
-      } catch (error) {
-        alert("No se pudo reproducir la música. Comprueba que el MP3 esté junto a index.html en GitHub.");
-      }
-    }
-
-    function updateMusicButtons() {
-      const label = musicOn ? "⏸ Pausar música" : "🎵 Activar música";
-      musicBtn.textContent = label;
-      musicBtnSuccess.textContent = label;
-    }
-
-    musicBtn.addEventListener("click", toggleMusic);
-    musicBtnSuccess.addEventListener("click", toggleMusic);
-
-    music.addEventListener("play", () => {
-      musicOn = true;
-      updateMusicButtons();
-    });
-
-    music.addEventListener("pause", () => {
-      musicOn = false;
-      updateMusicButtons();
-    });
   </script>
 </body>
 </html>
