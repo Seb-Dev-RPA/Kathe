@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Una pregunta para ti 💌</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #fff0f5, #ffe0eb);
+      color: #793653;
+    }
+
+    .card {
+      width: min(90%, 440px);
+      padding: 35px 22px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.88);
+      border-radius: 28px;
+      box-shadow: 0 12px 40px rgba(190, 91, 130, 0.15);
+      position: relative;
+      z-index: 1;
+    }
+
+    .heart {
+      font-size: 55px;
+      animation: heartbeat 1.3s infinite;
+    }
+
+    h1 {
+      font-size: clamp(25px, 6vw, 32px);
+      margin: 18px 0 12px;
+    }
+
+    p {
+      font-size: 16px;
+      color: #a16b83;
+      margin-bottom: 30px;
+    }
+
+    .buttons {
+      position: relative;
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 25px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform 0.25s ease,
+                  background 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #yes {
+      color: white;
+      background: #ed6798;
+      box-shadow: 0 5px 15px rgba(237, 103, 152, 0.3);
+      position: relative;
+      z-index: 2;
+      white-space: nowrap;
+    }
+
+    #yes:hover {
+      background: #e64d87;
+    }
+
+    #no {
+      color: #85536a;
+      background: #f4e5ec;
+      position: relative;
+      z-index: 3;
+      white-space: nowrap;
+    }
+
+    #no.running {
+      position: fixed;
+      transition: left 0.18s ease, top 0.18s ease;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    #success h1 {
+      color: #e64d87;
+      font-size: 36px;
+    }
+
+    #success p {
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .celebration {
+      font-size: 55px;
+      animation: bounce 0.8s infinite alternate;
+    }
+
+    .floating-heart {
+      position: fixed;
+      bottom: -40px;
+      pointer-events: none;
+      z-index: 0;
+      animation: floatUp 3s ease-in forwards;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0) rotate(-5deg); }
+      to { transform: translateY(-10px) rotate(5deg); }
+    }
+
+    @keyframes floatUp {
+      to {
+        transform: translateY(-110vh) rotate(30deg);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .card {
+        padding: 28px 15px;
+      }
+
+      .buttons {
+        gap: 10px;
+      }
+
+      button {
+        padding: 13px 19px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="card" id="question">
+    <div class="heart">💌</div>
+
+    <h1>¿Quieres tener una cita conmigo?</h1>
+
+    <p>Tengo una propuesta para ti...</p>
+
+    <div class="buttons" id="buttons">
+      <button id="yes">¡Sí! 💖</button>
+      <button id="no">No 🙈</button>
+    </div>
+  </main>
+
+  <main class="card hidden" id="success">
+    <div class="celebration">🥰</div>
+
+    <h1>¡LO SABÍA! ❤️</h1>
+
+    <p>
+      JAJAJA, ahora solo falta decidir
+      cuándo y dónde. 😉
+    </p>
+
+    <div style="font-size: 35px;">💕 🌷 💕</div>
+  </main>
+
+  <script>
+    const yes = document.getElementById("yes");
+    const no = document.getElementById("no");
+    const question = document.getElementById("question");
+    const success = document.getElementById("success");
+    const buttons = document.getElementById("buttons");
+
+    let attempts = 0;
+    let yesScale = 1;
+
+    function moveNo() {
+      // El botón empieza a escapar de su lugar.
+      if (!no.classList.contains("running")) {
+        no.classList.add("running");
+
+        const rect = no.getBoundingClientRect();
+        no.style.left = rect.left + "px";
+        no.style.top = rect.top + "px";
+      }
+
+      attempts++;
+
+      // El botón Sí crece con cada intento.
+      yesScale = Math.min(1 + attempts * 0.12, 2.2);
+      yes.style.transform = `scale(${yesScale})`;
+
+      // Buscamos una nueva posición dentro de la pantalla.
+      const margin = 15;
+      const maxX = window.innerWidth - no.offsetWidth - margin;
+      const maxY = window.innerHeight - no.offsetHeight - margin;
+
+      let x, y;
+      let tries = 0;
+
+      do {
+        x = margin + Math.random() * Math.max(0, maxX - margin);
+        y = margin + Math.random() * Math.max(0, maxY - margin);
+        tries++;
+      } while (
+        tries < 30 &&
+        Math.abs(x - yes.getBoundingClientRect().left) < 130 &&
+        Math.abs(y - yes.getBoundingClientRect().top) < 100
+      );
+
+      no.style.left = `${x}px`;
+      no.style.top = `${y}px`;
+    }
+
+    // En computador: escapar al acercar el cursor.
+    no.addEventListener("pointerenter", (event) => {
+      if (event.pointerType === "mouse") {
+        moveNo();
+      }
+    });
+
+    // En celular: escapar al intentar tocarlo.
+    no.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      moveNo();
+    });
+
+    // Por si logra hacer clic de todas formas.
+    no.addEventListener("click", (event) => {
+      event.preventDefault();
+      moveNo();
+    });
+
+    yes.addEventListener("click", () => {
+      question.classList.add("hidden");
+      success.classList.remove("hidden");
+
+      // ¡Lluvia de corazones!
+      for (let i = 0; i < 35; i++) {
+        setTimeout(createHeart, i * 90);
+      }
+    });
+
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.className = "floating-heart";
+
+      const emojis = ["❤️", "💕", "💖", "💗", "💘"];
+      heart.textContent =
+        emojis[Math.floor(Math.random() * emojis.length)];
+
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.fontSize = (18 + Math.random() * 25) + "px";
+      heart.style.animationDuration = (2.5 + Math.random() * 2) + "s";
+
+      document.body.appendChild(heart);
+
+      setTimeout(() => heart.remove(), 5000);
+    }
+  </script>
+
+</body>
+</html>
